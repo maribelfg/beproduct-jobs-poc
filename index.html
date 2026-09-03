@@ -345,6 +345,10 @@
     });
   }
 
+  function isSafeUrl(u){
+    return /^https?:\/\//i.test(String(u || ''));
+  }
+
   function fetchRemotive(){
     return fetch('https://remotive.com/api/remote-jobs?category=product')
       .then(function(r){ if(!r.ok) throw new Error('remotive'); return r.json(); })
@@ -415,7 +419,7 @@
           (tagsHtml ? '<div class="tags">'+tagsHtml+'</div>' : '') +
           '<div class="card-foot">' +
             '<time>'+escapeHtml(timeAgo(j.publishedAt))+'</time>' +
-            '<a class="view-link" href="'+j.url+'" target="_blank" rel="noopener noreferrer">Ver oferta original <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>' +
+            '<a class="view-link" href="'+escapeHtml(j.url)+'" target="_blank" rel="noopener noreferrer">Ver oferta original <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>' +
           '</div>' +
         '</article>'
       );
@@ -478,7 +482,7 @@
     var seen = new Set();
     var jobs = [];
     all.forEach(function(j){
-      if (!j.title || !j.url) return;
+      if (!j.title || !isSafeUrl(j.url)) return;
       var role = classify(j.title);
       if (!role) return;
       var key = dedupeKey(j);
