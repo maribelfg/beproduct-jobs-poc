@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ofertas de Producto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page:40 30% 95%;
+    --ink:0 0% 12%;
+    --ink-soft:0 0% 40%;
+    --card:0 0% 100%;
+    --card-border:0 0% 88%;
+    --card-border-strong:0 0% 78%;
+    --dark:0 0% 8%;
+    --dark-card:0 0% 13%;
+    --dark-border:0 0% 22%;
+    --on-dark:0 0% 96%;
+    --on-dark-soft:0 0% 68%;
+    --gold:43 74% 49%;
+    --gold-ink:43 90% 24%;
+    --gold-soft:43 65% 91%;
+    --gold-on-dark:43 80% 62%;
+    --shadow: 0 1px 3px rgba(0,0,0,.05), 0 6px 20px -6px rgba(0,0,0,.08);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:hsl(var(--page));
+    color:hsl(var(--ink));
+    font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  h1,h2,h3,.wordmark{
+    font-family:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+    text-wrap:balance;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:0 24px;}
+
+  /* header */
+  header{
+    background:hsl(var(--page) / .94);
+    backdrop-filter:blur(8px);
+    position:sticky;top:0;z-index:30;
+    border-bottom:1px solid hsl(var(--card-border));
+  }
+  header .wrap{
+    display:flex;align-items:center;justify-content:space-between;
+    height:68px;
+  }
+  .wordmark{
+    font-weight:700;font-size:1.05rem;letter-spacing:-0.01em;
+    display:flex;align-items:center;gap:9px;
+  }
+  .logo-mark{
+    width:26px;height:26px;border-radius:7px;
+    background:hsl(var(--ink));
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .logo-mark svg{width:14px;height:14px;}
+  nav{display:flex;align-items:center;gap:26px;}
+  nav .navlink{
+    font-size:.88rem;font-weight:500;color:hsl(var(--ink-soft));
+    display:none;
+  }
+  @media (min-width:760px){ nav .navlink{display:inline;} }
+  .btn-dark{
+    background:hsl(var(--ink));color:hsl(var(--page));
+    font-size:.85rem;font-weight:600;
+    padding:9px 16px;border-radius:8px;
+    border:none;white-space:nowrap;
+  }
+
+  /* hero card (dark, contained — not full-bleed) */
+  .hero-shell{padding:28px 0 0;}
+  .hero{
+    background:hsl(var(--dark));
+    color:hsl(var(--on-dark));
+    border-radius:20px;
+    padding:56px 32px 44px;
+    text-align:center;
+  }
+  .hero .eyebrow{
+    font-size:.7rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+    color:hsl(var(--gold-on-dark));
+    background:hsl(0 0% 100% / .07);
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 13px;border-radius:99px;
+    margin-bottom:22px;
+    border:1px solid hsl(0 0% 100% / .1);
+  }
+  .hero h1{
+    font-size:clamp(1.9rem, 3.6vw, 2.85rem);
+    font-weight:700;line-height:1.14;letter-spacing:-0.02em;
+    margin:0 auto 16px;
+    max-width:19ch;
+  }
+  .hero h1 .accent{color:hsl(var(--gold-on-dark));}
+  .hero p{
+    font-size:1.02rem;color:hsl(var(--on-dark-soft));
+    max-width:52ch;margin:0 auto;
+  }
+
+  .stats{
+    display:flex;justify-content:center;flex-wrap:wrap;gap:40px;
+    margin-top:36px;padding-top:30px;
+    border-top:1px solid hsl(0 0% 100% / .1);
+  }
+  .stat{text-align:center;}
+  .stat b{
+    display:block;font-family:"Space Grotesk",sans-serif;
+    font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums;
+  }
+  .stat span{font-size:.76rem;color:hsl(var(--on-dark-soft));}
+
+  /* controls */
+  .controls{
+    position:sticky;top:68px;z-index:20;
+    background:hsl(var(--page) / .94);
+    backdrop-filter:blur(8px);
+    padding:22px 0 14px;
+  }
+  .controls-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+  .chip{
+    border:1px solid hsl(var(--card-border-strong));
+    background:hsl(var(--card));
+    color:hsl(var(--ink));
+    padding:7px 14px;border-radius:99px;
+    font-size:.83rem;font-weight:500;
+    cursor:pointer;
+    transition:border-color .15s, background .15s, color .15s;
+    white-space:nowrap;
+  }
+  .chip:hover{border-color:hsl(var(--gold));}
+  .chip[aria-pressed="true"]{
+    background:hsl(var(--ink));
+    color:hsl(var(--page));
+    border-color:hsl(var(--ink));
+  }
+  .chip .count{opacity:.6;font-variant-numeric:tabular-nums;margin-left:2px;}
+  .controls-meta{
+    margin-left:auto;font-size:.8rem;color:hsl(var(--ink-soft));
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* grid */
+  main{padding:8px 0 84px;}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+    gap:16px;
+  }
+
+  .card{
+    background:hsl(var(--card));
+    color:hsl(var(--ink));
+    border:1px solid hsl(var(--card-border));
+    border-radius:14px;
+    padding:20px;
+    box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:12px;
+    min-width:0;
+  }
+  .card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .role-badge{
+    font-size:.67rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;
+    padding:3px 9px;border-radius:99px;
+    background:hsl(var(--gold-soft));color:hsl(var(--gold-ink));
+  }
+  .source-badge{
+    font-size:.68rem;color:hsl(var(--ink-soft));
+    display:flex;align-items:center;gap:5px;
+  }
+  .source-badge .src-dot{width:6px;height:6px;border-radius:50%;background:hsl(var(--ink-soft));}
+  .card h3{font-size:1.04rem;font-weight:700;line-height:1.32;margin:0;letter-spacing:-0.005em;}
+  .card .company{
+    font-size:.87rem;color:hsl(var(--ink-soft));
+    display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  }
+  .card .company b{color:hsl(var(--ink));font-weight:600;}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;}
+  .tag{
+    font-size:.71rem;color:hsl(var(--ink-soft));
+    border:1px solid hsl(var(--card-border));
+    padding:2px 8px;border-radius:5px;
+  }
+  .card-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding-top:12px;border-top:1px solid hsl(var(--card-border));
+  }
+  .card-foot time{font-size:.74rem;color:hsl(var(--ink-soft));font-variant-numeric:tabular-nums;}
+  .view-link{
+    font-size:.83rem;font-weight:600;color:hsl(var(--ink));
+    display:inline-flex;align-items:center;gap:5px;
+    text-decoration:none;
+    border-bottom:1px solid hsl(var(--gold));
+    padding-bottom:1px;
+  }
+  .view-link:hover{color:hsl(var(--gold-ink));}
+  .view-link svg{width:12px;height:12px;transition:transform .15s;}
+  .view-link:hover svg{transform:translate(2px,-2px);}
+
+  /* states */
+  .empty, .loading{text-align:center;padding:64px 20px;color:hsl(var(--ink-soft));}
+  .loading .spinner{
+    width:22px;height:22px;border-radius:50%;
+    border:2.5px solid hsl(var(--card-border-strong));
+    border-top-color:hsl(var(--gold));
+    margin:0 auto 16px;
+    animation:spin .8s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .loading .spinner{animation:none;} }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .source-error{
+    font-size:.78rem;color:hsl(var(--ink-soft));
+    background:hsl(var(--card));border:1px dashed hsl(var(--card-border-strong));
+    border-radius:10px;padding:10px 14px;margin-bottom:20px;
+    display:none;
+  }
+
+  footer{border-top:1px solid hsl(var(--card-border));padding:32px 0 44px;}
+  footer .wrap{display:flex;flex-direction:column;gap:8px;}
+  footer p{font-size:.8rem;color:hsl(var(--ink-soft));margin:0;max-width:70ch;}
+  footer a{text-decoration:underline;text-underline-offset:2px;}
+
+  @media (max-width:640px){
+    .hero{padding:40px 22px 32px;border-radius:16px;}
+    .controls{top:60px;}
+    header .wrap{height:60px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="wordmark">
+      <span class="logo-mark">
+        <svg viewBox="0 0 112 112" fill="none" stroke="white" stroke-width="10"><g transform="translate(6,6)"><path d="M6 20 H30 A15 15 0 0 1 30 50 H6"/><path d="M30 50 A15 15 0 0 1 30 80 H6"/><path d="M57 20 H94"/><path d="M57 50 H94"/><path d="M57 80 H94"/></g></svg>
+      </span>
+      Be Product
+    </div>
+    <nav>
+      <span class="navlink">Radar de empleo</span>
+      <span class="navlink">Product &amp; Tech</span>
+      <button class="btn-dark">Ver ofertas</button>
+    </nav>
+  </div>
+</header>
+
+<div class="hero-shell">
+  <div class="wrap">
+    <div class="hero">
+      <span class="eyebrow">Agregador · no bolsa de empleo</span>
+      <h1>Dónde está mirando <span class="accent">quien contrata</span> producto ahora mismo</h1>
+      <div class="stats" id="stats">
+        <div class="stat"><b id="stat-total">—</b><span>ofertas relevantes</span></div>
+        <div class="stat"><b id="stat-pm">—</b><span>product management</span></div>
+        <div class="stat"><b id="stat-design">—</b><span>product design</span></div>
+        <div class="stat"><b id="stat-companies">—</b><span>empresas distintas</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="controls-row" id="filters">
+      <button class="chip" data-filter="all" aria-pressed="true">Todas <span class="count" id="c-all"></span></button>
+      <button class="chip" data-filter="pm">Product Management <span class="count" id="c-pm"></span></button>
+      <button class="chip" data-filter="design">Product Design <span class="count" id="c-design"></span></button>
+      <button class="chip" data-filter="tech">Tech de producto <span class="count" id="c-tech"></span></button>
+      <span class="controls-meta" id="results-meta"></span>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <div class="source-error" id="source-error"></div>
+    <div id="content">
+      <div class="loading">
+        <div class="spinner"></div>
+        Buscando ofertas en Remotive y Arbeitnow…
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Cómo funciona:</strong> esta página consulta en directo, desde tu navegador, las APIs públicas de <a href="https://remotive.com/api-documentation" target="_blank" rel="noopener">Remotive</a> y <a href="https://www.arbeitnow.com/api/job-board-api" target="_blank" rel="noopener">Arbeitnow</a>, y filtra client-side las ofertas relacionadas con producto y tecnología. No almacenamos ni republicamos las ofertas: cada tarjeta enlaza a su anuncio original, donde se gestiona la candidatura.</p>
+    <p>Prueba de concepto de agregación para Be Product · Fuentes: Remotive, Arbeitnow.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var KEYWORDS = {
+    pm: ['product manager','product owner','head of product','vp of product','vp product','director of product','chief product officer',' cpo ','product management','product lead','group product manager','senior product manager','principal product manager','associate product manager'],
+    design: ['product designer','ux designer','ux/ui designer','ui/ux designer','ux ui designer','senior product designer','lead product designer','principal product designer','design lead','head of design','product design'],
+    tech: ['frontend engineer for product','product engineer','growth engineer','platform product','technical product manager']
+  };
+
+  var EXCLUDE = ['product marketing','marketing manager','sales','graphic designer','print designer','interior designer','fashion designer','game designer','video editor'];
+
+  function classify(title){
+    var t = (' ' + title.toLowerCase() + ' ');
+    for (var i=0;i<EXCLUDE.length;i++){
+      if (t.indexOf(EXCLUDE[i]) !== -1 && t.indexOf('product designer') === -1 && t.indexOf('product manager') === -1) return null;
+    }
+    for (var k in KEYWORDS){
+      var words = KEYWORDS[k];
+      for (var j=0;j<words.length;j++){
+        if (t.indexOf(words[j]) !== -1) return k;
+      }
+    }
+    return null;
+  }
+
+  function timeAgo(dateStr){
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    if (isNaN(d)) return '';
+    var days = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (days <= 0) return 'hoy';
+    if (days === 1) return 'ayer';
+    if (days < 30) return 'hace ' + days + ' d';
+    var months = Math.floor(days/30);
+    return 'hace ' + months + (months===1 ? ' mes' : ' meses');
+  }
+
+  function escapeHtml(s){
+    return String(s || '').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function fetchRemotive(){
+    return fetch('https://remotive.com/api/remote-jobs?category=product')
+      .then(function(r){ if(!r.ok) throw new Error('remotive'); return r.json(); })
+      .then(function(d){
+        return (d.jobs||[]).map(function(j){
+          return {
+            title: j.title,
+            company: j.company_name,
+            location: j.candidate_required_location || 'Remoto',
+            url: j.url,
+            tags: (j.tags||[]).slice(0,4),
+            source: 'Remotive',
+            publishedAt: j.publication_date
+          };
+        });
+      })
+      .catch(function(){ return { __error: 'Remotive' }; });
+  }
+
+  function fetchArbeitnow(page){
+    var url = 'https://www.arbeitnow.com/api/job-board-api' + (page>1 ? ('?page='+page) : '');
+    return fetch(url)
+      .then(function(r){ if(!r.ok) throw new Error('arbeitnow'); return r.json(); })
+      .then(function(d){
+        return (d.data||[]).map(function(j){
+          return {
+            title: j.title,
+            company: j.company_name,
+            location: (j.location || (j.remote ? 'Remoto' : '')) || 'Remoto',
+            url: j.url,
+            tags: (j.tags||[]).slice(0,4),
+            source: 'Arbeitnow',
+            publishedAt: j.created_at ? new Date(j.created_at*1000).toISOString() : null
+          };
+        });
+      })
+      .catch(function(){ return { __error: 'Arbeitnow' }; });
+  }
+
+  function dedupeKey(job){
+    return (job.title||'').toLowerCase().trim() + '::' + (job.company||'').toLowerCase().trim();
+  }
+
+  function render(jobs, activeFilter){
+    var content = document.getElementById('content');
+    var filtered = activeFilter === 'all' ? jobs : jobs.filter(function(j){ return j.role === activeFilter; });
+
+    document.getElementById('results-meta').textContent = filtered.length + (filtered.length===1 ? ' oferta' : ' ofertas');
+
+    if (filtered.length === 0){
+      content.innerHTML = '<div class="empty">No hay ofertas para este filtro ahora mismo. Prueba con otra categoría.</div>';
+      return;
+    }
+
+    var html = '<div class="grid">' + filtered.map(function(j){
+      var roleLabel = j.role === 'pm' ? 'Product Management' : (j.role === 'design' ? 'Product Design' : 'Tech de producto');
+      var tagsHtml = j.tags.map(function(t){ return '<span class="tag">'+escapeHtml(t)+'</span>'; }).join('');
+      return (
+        '<article class="card">' +
+          '<div class="card-top">' +
+            '<span class="role-badge">'+roleLabel+'</span>' +
+            '<span class="source-badge"><span class="src-dot"></span>'+j.source+'</span>' +
+          '</div>' +
+          '<div>' +
+            '<h3>'+escapeHtml(j.title)+'</h3>' +
+            '<div class="company"><b>'+escapeHtml(j.company||'Empresa confidencial')+'</b> · '+escapeHtml(j.location)+'</div>' +
+          '</div>' +
+          (tagsHtml ? '<div class="tags">'+tagsHtml+'</div>' : '') +
+          '<div class="card-foot">' +
+            '<time>'+escapeHtml(timeAgo(j.publishedAt))+'</time>' +
+            '<a class="view-link" href="'+j.url+'" target="_blank" rel="noopener noreferrer">Ver oferta original <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>' +
+          '</div>' +
+        '</article>'
+      );
+    }).join('') + '</div>';
+
+    content.innerHTML = html;
+  }
+
+  function updateCounts(jobs){
+    var counts = { all: jobs.length, pm: 0, design: 0, tech: 0 };
+    jobs.forEach(function(j){ counts[j.role]++; });
+    document.getElementById('c-all').textContent = counts.all;
+    document.getElementById('c-pm').textContent = counts.pm;
+    document.getElementById('c-design').textContent = counts.design;
+    document.getElementById('c-tech').textContent = counts.tech;
+
+    document.getElementById('stat-total').textContent = counts.all;
+    document.getElementById('stat-pm').textContent = counts.pm;
+    document.getElementById('stat-design').textContent = counts.design;
+    var companies = new Set(jobs.map(function(j){ return (j.company||'').toLowerCase().trim(); }).filter(Boolean));
+    document.getElementById('stat-companies').textContent = companies.size;
+  }
+
+  var state = { jobs: [], filter: 'all' };
+
+  document.getElementById('filters').addEventListener('click', function(e){
+    var btn = e.target.closest('.chip');
+    if (!btn) return;
+    document.querySelectorAll('#filters .chip').forEach(function(c){ c.setAttribute('aria-pressed','false'); });
+    btn.setAttribute('aria-pressed','true');
+    state.filter = btn.getAttribute('data-filter');
+    render(state.jobs, state.filter);
+  });
+
+  Promise.allSettled([
+    fetchRemotive(),
+    fetchArbeitnow(1),
+    fetchArbeitnow(2)
+  ]).then(function(results){
+    var errors = [];
+    var all = [];
+    results.forEach(function(res){
+      if (res.status === 'fulfilled'){
+        if (res.value && res.value.__error){
+          errors.push(res.value.__error);
+        } else {
+          all = all.concat(res.value);
+        }
+      } else {
+        errors.push('fuente');
+      }
+    });
+
+    if (errors.length){
+      var box = document.getElementById('source-error');
+      box.style.display = 'block';
+      box.textContent = 'Aviso: no se pudo cargar ' + errors.join(' y ') + ' en este momento. Mostrando resultados de las fuentes disponibles.';
+    }
+
+    var seen = new Set();
+    var jobs = [];
+    all.forEach(function(j){
+      if (!j.title || !j.url) return;
+      var role = classify(j.title);
+      if (!role) return;
+      var key = dedupeKey(j);
+      if (seen.has(key)) return;
+      seen.add(key);
+      j.role = role;
+      jobs.push(j);
+    });
+
+    jobs.sort(function(a,b){
+      var da = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+      var db = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+      return db - da;
+    });
+
+    state.jobs = jobs;
+    updateCounts(jobs);
+
+    if (jobs.length === 0){
+      document.getElementById('content').innerHTML = '<div class="empty">No se encontraron ofertas de producto en este momento. Las fuentes pueden tardar en refrescar su catálogo — vuelve a intentarlo en unos minutos.</div>';
+      return;
+    }
+
+    render(jobs, state.filter);
+  });
+})();
+</script>
+</body>
+</html>
