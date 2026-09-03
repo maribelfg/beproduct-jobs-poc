@@ -147,6 +147,22 @@
     border-color:hsl(var(--ink));
   }
   .chip .count{opacity:.6;font-variant-numeric:tabular-nums;margin-left:2px;}
+  .city-select{
+    border:1px solid hsl(var(--card-border-strong));
+    background:hsl(var(--card));
+    color:hsl(var(--ink));
+    padding:7px 12px;border-radius:99px;
+    font-size:.83rem;font-weight:500;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 10px center;
+    background-size:13px;
+    padding-right:30px;
+  }
+  .city-select:hover{border-color:hsl(var(--gold));}
   .controls-meta{
     margin-left:auto;font-size:.8rem;color:hsl(var(--ink-soft));
     font-variant-numeric:tabular-nums;
@@ -279,6 +295,9 @@
       <button class="chip" data-filter="pm">Product Management <span class="count" id="c-pm"></span></button>
       <button class="chip" data-filter="design">Product Design <span class="count" id="c-design"></span></button>
       <button class="chip" data-filter="tech">Tech de producto <span class="count" id="c-tech"></span></button>
+      <select class="city-select" id="city-select" aria-label="Filtrar por ciudad">
+        <option value="all">Todas las ciudades</option>
+      </select>
       <span class="controls-meta" id="results-meta"></span>
     </div>
   </div>
@@ -298,8 +317,8 @@
 
 <footer>
   <div class="wrap">
-    <p><strong>Cómo funciona:</strong> esta página consulta en directo, desde tu navegador, las APIs públicas de <a href="https://remotive.com/api-documentation" target="_blank" rel="noopener">Remotive</a> y <a href="https://www.arbeitnow.com/api/job-board-api" target="_blank" rel="noopener">Arbeitnow</a>, y filtra client-side las ofertas relacionadas con producto y tecnología. No almacenamos ni republicamos las ofertas: cada tarjeta enlaza a su anuncio original, donde se gestiona la candidatura.</p>
-    <p>Prueba de concepto de agregación para Be Product · Fuentes: Remotive, Arbeitnow.</p>
+    <p><strong>Cómo funciona:</strong> esta página consulta en directo, desde tu navegador, las APIs públicas de <a href="https://remotive.com/api-documentation" target="_blank" rel="noopener">Remotive</a>, <a href="https://www.arbeitnow.com/api/job-board-api" target="_blank" rel="noopener">Arbeitnow</a>, <a href="https://remoteok.com/api" target="_blank" rel="noopener">RemoteOK</a> y <a href="https://developer.adzuna.com/" target="_blank" rel="noopener">Adzuna</a> (España), y filtra client-side las ofertas relacionadas con producto y tecnología. No almacenamos ni republicamos las ofertas: cada tarjeta enlaza a su anuncio original, donde se gestiona la candidatura.</p>
+    <p>Prueba de concepto de agregación para Be Product · Fuentes: Remotive, Arbeitnow, RemoteOK, Adzuna.</p>
   </div>
 </footer>
 
@@ -388,13 +407,84 @@
       .catch(function(){ return { __error: 'Arbeitnow' }; });
   }
 
+  var ADZUNA_PROXY = 'https://beproduct-adzuna-proxy.adzuna-proxy.workers.dev/';
+
+  function fetchAdzuna(what){
+    var url = ADZUNA_PROXY + '?what=' + encodeURIComponent(what) + '&page=1';
+    return fetch(url)
+      .then(function(r){ if(!r.ok) throw new Error('adzuna'); return r.json(); })
+      .then(function(d){
+        return (d.results||[]).map(function(j){
+          return {
+            title: j.title,
+            company: j.company && j.company.display_name,
+            location: (j.location && j.location.display_name) || 'España',
+            url: j.redirect_url,
+            tags: j.category && j.category.label ? [j.category.label] : [],
+            source: 'Adzuna',
+            publishedAt: j.created
+          };
+        });
+      })
+      .catch(function(){ return { __error: 'Adzuna' }; });
+  }
+
+  function fetchRemoteOK(){
+    return fetch('https://remoteok.com/api')
+      .then(function(r){ if(!r.ok) throw new Error('remoteok'); return r.json(); })
+      .then(function(d){
+        return (d||[]).filter(function(j){ return j && j.id; }).map(function(j){
+          return {
+            title: j.position,
+            company: j.company,
+            location: j.location || 'Remoto',
+            url: j.url || ('https://remoteok.com/remote-jobs/' + j.id),
+            tags: (j.tags||[]).slice(0,4),
+            source: 'RemoteOK',
+            publishedAt: j.date
+          };
+        });
+      })
+      .catch(function(){ return { __error: 'RemoteOK' }; });
+  }
+
   function dedupeKey(job){
     return (job.title||'').toLowerCase().trim() + '::' + (job.company||'').toLowerCase().trim();
   }
 
-  function render(jobs, activeFilter){
+  var REMOTE_LABEL = 'Remoto / Otros';
+
+  function cityOf(location){
+    var loc = (location || '').trim();
+    if (!loc || /^remot|^españa$|^spain$|,\s*(europe|latam|usa|canada|apac|uk|worldwide)/i.test(loc)) return REMOTE_LABEL;
+    var city = loc.split(/[,(\-–]/)[0].trim();
+    if (!city || city.length > 28) return REMOTE_LABEL;
+    return city;
+  }
+
+  function populateCityFilter(jobs){
+    var select = document.getElementById('city-select');
+    var counts = {};
+    jobs.forEach(function(j){
+      counts[j.city] = (counts[j.city] || 0) + 1;
+    });
+    var cities = Object.keys(counts).filter(function(c){ return c !== REMOTE_LABEL; }).sort(function(a,b){
+      return counts[b] - counts[a] || a.localeCompare(b);
+    });
+    if (counts[REMOTE_LABEL]) cities.push(REMOTE_LABEL);
+
+    select.innerHTML = '<option value="all">Todas las ciudades</option>' + cities.map(function(c){
+      return '<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+' ('+counts[c]+')</option>';
+    }).join('');
+  }
+
+  function render(jobs, activeFilter, activeCity){
     var content = document.getElementById('content');
-    var filtered = activeFilter === 'all' ? jobs : jobs.filter(function(j){ return j.role === activeFilter; });
+    var filtered = jobs.filter(function(j){
+      if (activeFilter !== 'all' && j.role !== activeFilter) return false;
+      if (activeCity && activeCity !== 'all' && j.city !== activeCity) return false;
+      return true;
+    });
 
     document.getElementById('results-meta').textContent = filtered.length + (filtered.length===1 ? ' oferta' : ' ofertas');
 
@@ -443,7 +533,7 @@
     document.getElementById('stat-companies').textContent = companies.size;
   }
 
-  var state = { jobs: [], filter: 'all' };
+  var state = { jobs: [], filter: 'all', city: 'all' };
 
   document.getElementById('filters').addEventListener('click', function(e){
     var btn = e.target.closest('.chip');
@@ -451,13 +541,21 @@
     document.querySelectorAll('#filters .chip').forEach(function(c){ c.setAttribute('aria-pressed','false'); });
     btn.setAttribute('aria-pressed','true');
     state.filter = btn.getAttribute('data-filter');
-    render(state.jobs, state.filter);
+    render(state.jobs, state.filter, state.city);
+  });
+
+  document.getElementById('city-select').addEventListener('change', function(e){
+    state.city = e.target.value;
+    render(state.jobs, state.filter, state.city);
   });
 
   Promise.allSettled([
     fetchRemotive(),
     fetchArbeitnow(1),
-    fetchArbeitnow(2)
+    fetchArbeitnow(2),
+    fetchAdzuna('product manager'),
+    fetchAdzuna('product designer'),
+    fetchRemoteOK()
   ]).then(function(results){
     var errors = [];
     var all = [];
@@ -489,6 +587,7 @@
       if (seen.has(key)) return;
       seen.add(key);
       j.role = role;
+      j.city = cityOf(j.location);
       jobs.push(j);
     });
 
@@ -500,13 +599,14 @@
 
     state.jobs = jobs;
     updateCounts(jobs);
+    populateCityFilter(jobs);
 
     if (jobs.length === 0){
       document.getElementById('content').innerHTML = '<div class="empty">No se encontraron ofertas de producto en este momento. Las fuentes pueden tardar en refrescar su catálogo — vuelve a intentarlo en unos minutos.</div>';
       return;
     }
 
-    render(jobs, state.filter);
+    render(jobs, state.filter, state.city);
   });
 })();
 </script>
